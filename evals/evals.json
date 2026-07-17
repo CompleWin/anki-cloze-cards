@@ -1,0 +1,50 @@
+{
+  "skill_name": "anki-cloze-cards",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "eval-0-new-word",
+      "prompt": "разбери слово grudge",
+      "expected_output": "Файл new_words/grudge.tsv с 14-колоночной TSV-строкой (cloze с англ. подсказкой, блок 3+ примеров, пустая колонка Image), строка для grudge дописана в All_Words.csv, в чате только короткое подтверждение",
+      "files": ["All_Words.csv (3 записи, без grudge)"],
+      "assertions": [
+        "new_words/grudge.tsv exists",
+        "every row in grudge.tsv has exactly 14 tab-separated columns",
+        "Sentence column contains a {{c1::...}} cloze deletion",
+        "the cloze hint contains no Cyrillic characters",
+        "Image column (12th) is empty in every row",
+        "Example2 column contains at least 3 <br>-separated example sentences",
+        "All_Words.csv gained a grudge row and kept the original 3 entries",
+        "Tags column uses only allowed tags (verb noun adjective adverb conjunction phrase idiom phrasal-verb)",
+        "chat reply (response.md) is a short confirmation that does not dump the card content"
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "eval-1-duplicate",
+      "prompt": "добавь карточку на oatmeal",
+      "expected_output": "Карточка НЕ создаётся (oatmeal уже есть в All_Words.csv): нет новых tsv-файлов, словарь не изменён, в чате сообщение о дубле с цитатой строки Word · oatmeal · noun",
+      "files": ["All_Words.csv (содержит Word,oatmeal,noun)"],
+      "assertions": [
+        "no new_words/oatmeal.tsv or any other new card file was created",
+        "All_Words.csv is unchanged (same 3 entries, no duplicate oatmeal row)",
+        "chat reply (response.md) says the word is already in the dictionary and quotes the existing row"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "eval-2-contrast-pair",
+      "prompt": "сделай карточки на affect / effect",
+      "expected_output": "Два отдельных файла new_words/affect.tsv и new_words/effect.tsv (контрастная пара = разные слова), каждый с естественным предложением, где подходит только эта форма; минимум один Example2 показывает контраст (✗/✓); обе строки в All_Words.csv",
+      "files": ["All_Words.csv (3 записи, без affect/effect)"],
+      "assertions": [
+        "two separate files new_words/affect.tsv and new_words/effect.tsv exist",
+        "every row in both files has exactly 14 tab-separated columns",
+        "each file's Sentence contains a {{c1::...}} cloze and hints contain no Cyrillic",
+        "at least one Example2 shows the contrast with the other word of the pair",
+        "All_Words.csv gained rows for both affect and effect",
+        "Image column (12th) is empty in every row"
+      ]
+    }
+  ]
+}
