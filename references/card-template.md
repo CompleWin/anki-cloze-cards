@@ -17,9 +17,13 @@
 11. **RU** — краткий перевод самого слова (страховка; под спойлером)
 12. **Image** — **всегда пустое**: картинку пользователь вставляет сам после импорта, ориентируясь на ImagePrompt
 13. **ImagePrompt** — англ. промпт картинки-ассоциации (картинка рисуется на обороте)
-14. **Tags** — теги через пробел (последняя колонка; при импорте мапится на Tags Anki)
+14. **Related** — 2–4 соседа этого значения **из `All_Words.csv`** (синонимы, `<i>opp:</i>`, `<i>cf:</i>`), у каждого короткое англ. различение; если соседей в словаре нет — пустое
+15. **MyExample** — **всегда пустое**: своё предложение ученик пишет сам во время review через редактор Anki (клавиша `E`)
+16. **Tags** — теги через пробел (последняя колонка; при импорте мапится на Tags Anki)
 
 Русские поля (SentenceRU, DefinitionRU, Example2RU, RU) на обороте отображаются под спойлером `<details>` — это обеспечивает note type (см. `scripts/create_anki_notetype.py`). В TSV кладётся только текст, без всяких `<details>`.
+
+Лицевая сторона, кроме предложения с пропуском, содержит поле ввода (`{{type:cloze:Sentence}}`): ответ **вписывается**, на обороте Anki показывает посимвольное сравнение. Со стороны генерации это ничего не требует — только естественную подсказку, по которой ответ восстанавливается однозначно.
 
 ## Эталон (markdown) — внутренняя рабочая модель
 
@@ -70,16 +74,23 @@ She **clawed** her way **back** into contention after falling to last place.
 ### ImagePrompt
 Photorealistic shot from behind: a red Formula 1 car closing in on a rival just ahead on a race track, heavy motion blur, the gap between them almost gone, dramatic late-afternoon light.
 
+### Related
+**retrieve** — get a thing back, one action, no struggle · *opp:* **squander** — lose it carelessly
+
+### MyExample
+
 ### Tags
 phrasal-verb
 ```
 
+В эталоне `Related` — это реально существующие в `All_Words.csv` строки `Word,retrieve,verb` и `Word,squander,verb`, а не подобранные «по смыслу» слова. Синонимов ровно столько, сколько нашлось в словаре: добирать до красивого числа нечем и не нужно.
+
 ## Эталон (TSV) — то, что реально пишется в файл
 
-Колонка Image идёт пустой: между RU и ImagePrompt — **две табуляции подряд**.
+Пустых колонок две: Image (между RU и ImagePrompt) и MyExample (между Related и Tags) — в обоих местах **две табуляции подряд**.
 
 ```tsv
-claw back	Verstappen managed to {{c1::claw back::c___ b___ recover gradually}} the eight-second gap over the final stint.	Ферстаппен сумел отыграть восьмисекундный отрыв на последнем отрезке гонки.	To gradually recover something you had lost — a lead, a deficit, money — through steady, deliberate effort.	Постепенно вернуть то, что было потеряно — преимущество, отставание, деньги — за счёт упорных, целенаправленных усилий.	Phrasal verb · separable · <i>claw sth back</i> / <i>claw back sth</i> · с местоимением объект в середине: <i>claw it back</i>.	/klɔː bæk/ (BrE), /klɑː bæk/ (AmE)	<b>claw back</b> a deficit / a gap / lost ground · <b>claw</b> the gap <b>back</b> · <b>claw back</b> losses	The government is trying to <b>claw back</b> overpaid benefits.<br>After a disastrous first half, the team slowly <b>clawed back</b> the deficit to draw 3–3.<br>It took years of austerity to <b>claw back</b> the money lost in the crisis.<br>She <b>clawed</b> her way <b>back</b> into contention after falling to last place.	Правительство пытается вернуть переплаченные пособия.<br>После провального первого тайма команда медленно отыграла отставание и свела матч вничью 3:3.<br>Понадобились годы жёсткой экономии, чтобы вернуть деньги, потерянные в кризис.<br>Она пробилась обратно в борьбу за победу, опустившись было на последнее место.	отыграть, постепенно вернуть (отставание, деньги)		Photorealistic shot from behind: a red Formula 1 car closing in on a rival just ahead on a race track, heavy motion blur, the gap between them almost gone, dramatic late-afternoon light.	phrasal-verb
+claw back	Verstappen managed to {{c1::claw back::c___ b___ recover gradually}} the eight-second gap over the final stint.	Ферстаппен сумел отыграть восьмисекундный отрыв на последнем отрезке гонки.	To gradually recover something you had lost — a lead, a deficit, money — through steady, deliberate effort.	Постепенно вернуть то, что было потеряно — преимущество, отставание, деньги — за счёт упорных, целенаправленных усилий.	Phrasal verb · separable · <i>claw sth back</i> / <i>claw back sth</i> · с местоимением объект в середине: <i>claw it back</i>.	/klɔː bæk/ (BrE), /klɑː bæk/ (AmE)	<b>claw back</b> a deficit / a gap / lost ground · <b>claw</b> the gap <b>back</b> · <b>claw back</b> losses	The government is trying to <b>claw back</b> overpaid benefits.<br>After a disastrous first half, the team slowly <b>clawed back</b> the deficit to draw 3–3.<br>It took years of austerity to <b>claw back</b> the money lost in the crisis.<br>She <b>clawed</b> her way <b>back</b> into contention after falling to last place.	Правительство пытается вернуть переплаченные пособия.<br>После провального первого тайма команда медленно отыграла отставание и свела матч вничью 3:3.<br>Понадобились годы жёсткой экономии, чтобы вернуть деньги, потерянные в кризис.<br>Она пробилась обратно в борьбу за победу, опустившись было на последнее место.	отыграть, постепенно вернуть (отставание, деньги)		Photorealistic shot from behind: a red Formula 1 car closing in on a rival just ahead on a race track, heavy motion blur, the gap between them almost gone, dramatic late-afternoon light.	<b>retrieve</b> — get a thing back, one action, no struggle · <i>opp:</i> <b>squander</b> — lose it carelessly		phrasal-verb
 ```
 
 ## Конверсия полей → TSV (механическая, формулировки не менять)
@@ -97,6 +108,8 @@ claw back	Verstappen managed to {{c1::claw back::c___ b___ recover gradually}} t
 | курсив | `<i>…</i>` |
 | inline-разделитель `·` | сохраняется как есть |
 | пустое поле Image | пустая колонка (между RU и ImagePrompt — две табуляции подряд) |
+| Related | позиции через ` · `, слово-сосед в `<b>`, метки `<i>opp:</i>` / `<i>cf:</i>`; соседей нет — пустая колонка |
+| пустое поле MyExample | пустая колонка (между Related и Tags — две табуляции подряд) |
 | Tags | последнее поле, теги через пробел |
 
 Внутри полей не должно остаться «сырых» табуляций и переносов строк — одна карточка = одна строка файла.

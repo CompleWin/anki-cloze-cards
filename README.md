@@ -15,8 +15,10 @@ Drop a word into the chat — get a TSV file for Anki:
 
 The card trains **production, not translation**:
 
-- **Front** — a natural sentence with a gap: `{{c1::oatmeal::o___ cooked oats}}`. You recall the word inside living context; the hint (first letter + a short English cue) narrows the answer to exactly one form.
+- **Front** — a natural sentence with a gap: `{{c1::oatmeal::o___ cooked oats}}`, plus an input box. You recall the word inside living context and **type it in**; Anki shows a character-by-character comparison on the back, so spelling and the exact form get drilled too. The hint (first letter + a short English cue) narrows the answer to exactly one form.
 - **Back** — definition, part of speech and irregular forms, IPA (BrE + AmE), collocations, a block of 3–6+ varied examples, and an image-association prompt.
+- **Related words you already know** — 2–4 neighbours pulled from your own `All_Words.csv` (synonyms, opposites, easily confused ones), each with a short English note on how it differs. New words land in a net of familiar ones instead of hanging alone.
+- **Your own sentence** — the `MyExample` field arrives empty on purpose: during review you press `E` and write your own sentence with the word. It is stored in the note and syncs across devices; until you write one, the back shows a reminder.
 - **Russian translations** (of the sentence, the definition, every example, and the word itself) are on the back **behind collapsible spoilers** — a safety net you open only when stuck, so the card stays monolingual-first.
 
 ## What the skill handles
@@ -51,7 +53,7 @@ That's it — Claude Code picks the skill up automatically whenever you ask for 
    python scripts/create_anki_notetype.py
    ```
 
-   This creates the **"Cloze EN Helper"** note type: 13 fields, spoiler-styled Russian fields, dark-mode support. Re-running the script updates the template and styling in place.
+   This creates the **"Cloze EN Helper"** note type: 15 fields, type-in-the-answer front, spoiler-styled Russian fields, dark-mode support. Re-running the script is safe — it adds any missing fields to the existing note type (empty on old notes) and updates the template and styling in place.
 
 ## Importing cards
 
@@ -62,10 +64,10 @@ Import `new_words/*.tsv` with Anki's standard importer:
 | Note type | Cloze EN Helper |
 | Field separator | Tab |
 | Allow HTML in fields | ON |
-| Columns 1–13 | fields in order (Target, Sentence, SentenceRU, Definition, DefinitionRU, Form, IPA, Collocations, Example2, Example2RU, RU, Image, ImagePrompt) |
-| Column 14 | Tags |
+| Columns 1–15 | fields in order (Target, Sentence, SentenceRU, Definition, DefinitionRU, Form, IPA, Collocations, Example2, Example2RU, RU, Image, ImagePrompt, Related, MyExample) |
+| Column 16 | Tags |
 
-The Image field arrives empty by design — add your own picture after import, using the ImagePrompt text shown on the back of the card.
+Two columns arrive empty by design: **Image** — add your own picture after import, using the ImagePrompt text shown on the back of the card; **MyExample** — your own sentence, written during review.
 
 ## Repository structure
 
@@ -114,8 +116,10 @@ new_words/       # one .tsv per word — files ready for Anki import
 
 Карточка тренирует **продакшн, а не перевод**:
 
-- **Лицевая сторона** — живое предложение с пропуском: `{{c1::oatmeal::o___ cooked oats}}`. Слово вспоминается внутри контекста; подсказка (первая буква + короткий английский ориентир) сужает ответ до единственной формы.
+- **Лицевая сторона** — живое предложение с пропуском: `{{c1::oatmeal::o___ cooked oats}}`, и поле ввода. Слово вспоминается внутри контекста и **вписывается руками**; на обороте Anki показывает посимвольное сравнение, так что задрилливаются и орфография, и точная форма. Подсказка (первая буква + короткий английский ориентир) сужает ответ до единственной формы.
 - **Оборот** — определение, часть речи и неправильные формы, IPA (BrE + AmE), коллокации, блок из 3–6+ разнообразных примеров и промпт картинки-ассоциации.
+- **Соседи из твоей же колоды** — 2–4 слова, взятые из твоего `All_Words.csv` (синонимы, антонимы, легко путаемые), у каждого короткая англ. пометка, чем оно отличается. Новое слово встаёт в сетку знакомых, а не висит в одиночку.
+- **Своё предложение** — поле `MyExample` приходит пустым намеренно: во время повторения жмёшь `E` и пишешь собственное предложение со словом. Оно хранится в заметке и синхронизируется между устройствами; пока не написано — оборот показывает напоминание.
 - **Русские переводы** (предложения, определения, всех примеров и самого слова) — на обороте **под раскрывающимися спойлерами**: страховка, которую открываешь, только если завис. Карточка остаётся monolingual-first.
 
 ## Что умеет скилл
@@ -150,7 +154,7 @@ git clone https://github.com/CompleWin/anki-cloze-cards <проект>/.claude/s
    python scripts/create_anki_notetype.py
    ```
 
-   Скрипт создаст note type **«Cloze EN Helper»**: 13 полей, русские поля под спойлерами, поддержка тёмной темы. Повторный запуск обновляет шаблон и стили на месте.
+   Скрипт создаст note type **«Cloze EN Helper»**: 15 полей, ввод ответа с лицевой стороны, русские поля под спойлерами, поддержка тёмной темы. Повторный запуск безопасен: добавляет недостающие поля в существующий note type (у старых заметок они остаются пустыми) и обновляет шаблон со стилями на месте.
 
 ## Импорт карточек
 
@@ -161,10 +165,10 @@ git clone https://github.com/CompleWin/anki-cloze-cards <проект>/.claude/s
 | Note type | Cloze EN Helper |
 | Разделитель полей | Tab |
 | Allow HTML in fields | ON |
-| Колонки 1–13 | поля по порядку (Target, Sentence, SentenceRU, Definition, DefinitionRU, Form, IPA, Collocations, Example2, Example2RU, RU, Image, ImagePrompt) |
-| Колонка 14 | Tags |
+| Колонки 1–15 | поля по порядку (Target, Sentence, SentenceRU, Definition, DefinitionRU, Form, IPA, Collocations, Example2, Example2RU, RU, Image, ImagePrompt, Related, MyExample) |
+| Колонка 16 | Tags |
 
-Поле Image приходит пустым намеренно — картинку добавляешь сам после импорта, ориентируясь на текст ImagePrompt на обороте карточки.
+Пустыми намеренно приходят две колонки: **Image** — картинку добавляешь сам после импорта, ориентируясь на текст ImagePrompt на обороте; **MyExample** — своё предложение, которое пишешь во время повторения.
 
 ## Структура репозитория
 

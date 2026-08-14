@@ -5,14 +5,16 @@
       "id": 0,
       "eval_name": "eval-0-new-word",
       "prompt": "разбери слово grudge",
-      "expected_output": "Файл new_words/grudge.tsv с 14-колоночной TSV-строкой (cloze с англ. подсказкой, блок 3+ примеров, пустая колонка Image), строка для grudge дописана в All_Words.csv, в чате только короткое подтверждение",
+      "expected_output": "Файл new_words/grudge.tsv с 16-колоночной TSV-строкой (cloze с англ. подсказкой, блок 3+ примеров, пустые колонки Image и MyExample), строка для grudge дописана в All_Words.csv, в чате только короткое подтверждение",
       "files": ["All_Words.csv (3 записи, без grudge)"],
       "assertions": [
         "new_words/grudge.tsv exists",
-        "every row in grudge.tsv has exactly 14 tab-separated columns",
+        "every row in grudge.tsv has exactly 16 tab-separated columns",
         "Sentence column contains a {{c1::...}} cloze deletion",
         "the cloze hint contains no Cyrillic characters",
         "Image column (12th) is empty in every row",
+        "MyExample column (15th) is empty in every row",
+        "Related column (14th) is either empty or contains only words that appear in the Word column of All_Words.csv — no invented neighbours",
         "Example2 column contains at least 3 <br>-separated example sentences",
         "All_Words.csv gained a grudge row and kept the original 3 entries",
         "Tags column uses only allowed tags (verb noun adjective adverb conjunction phrase idiom phrasal-verb)",
@@ -39,11 +41,26 @@
       "files": ["All_Words.csv (3 записи, без affect/effect)"],
       "assertions": [
         "two separate files new_words/affect.tsv and new_words/effect.tsv exist",
-        "every row in both files has exactly 14 tab-separated columns",
+        "every row in both files has exactly 16 tab-separated columns",
         "each file's Sentence contains a {{c1::...}} cloze and hints contain no Cyrillic",
         "at least one Example2 shows the contrast with the other word of the pair",
         "All_Words.csv gained rows for both affect and effect",
-        "Image column (12th) is empty in every row"
+        "Image column (12th) and MyExample column (15th) are empty in every row"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "eval-3-related-from-dictionary",
+      "prompt": "разбери слово reclaim",
+      "expected_output": "Файл new_words/reclaim.tsv, в котором колонка Related (14-я) собрана ИЗ All_Words.csv: соседи — retrieve и/или squander с короткими англ. различениями, слов не из словаря нет",
+      "files": ["All_Words.csv (содержит Word,retrieve,verb и Word,squander,verb)"],
+      "assertions": [
+        "new_words/reclaim.tsv exists and every row has exactly 16 tab-separated columns",
+        "Related column (14th) is non-empty and mentions retrieve and/or squander",
+        "every <b>-marked word inside the Related column appears verbatim in the Word column of All_Words.csv",
+        "Related does not contain the headword reclaim itself",
+        "Related contains no Cyrillic characters and each entry carries a short English distinction",
+        "MyExample column (15th) is empty"
       ]
     }
   ]
