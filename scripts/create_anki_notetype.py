@@ -21,8 +21,10 @@ What it does
   Target, Sentence, SentenceRU, Definition, DefinitionRU, Form, IPA,
   Collocations, Example2, Example2RU, RU, Image, ImagePrompt, Related,
   MyExample.
-- The front asks you to TYPE the missing word ({{type:cloze:Sentence}});
-  the back shows Anki's character-by-character comparison.
+- The front asks you to TYPE the missing word in a JavaScript input (not
+  {{type:}}, which AnkiWeb does not render), so it works the same on desktop,
+  AnkiDroid and AnkiWeb (e.g. iPhone Safari without AnkiMobile). Enter shows
+  the answer; the back marks wrong letters next to the correct answer.
 - Related renders on the back as a block of neighbouring words you have
   already studied (filled in by the skill from All_Words.csv).
 - MyExample is empty on import: it is the field YOU fill in during review
@@ -46,15 +48,90 @@ FIELDS = [
     "RU", "Image", "ImagePrompt", "Related", "MyExample",
 ]
 
+# Typing is done by our own <input> instead of {{type:...}}: AnkiWeb (and so
+# iPhone Safari without AnkiMobile) does not render {{type:}}, and this way
+# every client looks and checks the same. The typed text travels to the back
+# via sessionStorage and is compared there with the .cloze answer.
+# Enter shows the answer: pycmd on desktop, showAnswer() on AnkiDroid, and on
+# AnkiWeb a click on the page's own "Show Answer" button.
 FRONT = """<div class="ec">
   <div class="sentence">{{cloze:Sentence}}</div>
-  <div class="typebox">{{type:cloze:Sentence}}</div>
-</div>"""
+  <div class="typebox webtype">
+    <input id="webtype-input" type="text" placeholder="type the answer" enterkeyhint="done"
+           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+  </div>
+</div>
+<script>
+(function () {
+  var inp = document.getElementById('webtype-input');
+  if (!inp) return;
+  function save() {
+    try { sessionStorage.setItem('ecTyped', inp.value); } catch (e) {}
+  }
+  function findShowButton(doc) {
+    var els = doc.querySelectorAll('button, input[type=button], input[type=submit], a, [role=button]');
+    for (var i = 0; i < els.length; i++) {
+      var label = (els[i].textContent || els[i].value || '').trim();
+      if (/^(show answer|показать ответ)$/i.test(label)) return els[i];
+    }
+    return null;
+  }
+  function showAnswer() {
+    save();
+    if (typeof pycmd === 'function') { pycmd('ans'); return; }
+    if (typeof window.showAnswer === 'function') { window.showAnswer(); return; }
+    var btn = findShowButton(document);
+    if (!btn) { try { btn = findShowButton(window.parent.document); } catch (e) {} }
+    if (btn) { inp.blur(); btn.click(); }
+  }
+  try { sessionStorage.removeItem('ecTyped'); } catch (e) {}
+  inp.addEventListener('input', save);
+  inp.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Enter' || ev.isComposing) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    showAnswer();
+  });
+  setTimeout(function () { inp.focus(); }, 0);
+})();
+</script>"""
 
 BACK = """<div class="ec">
   <div class="sentence">{{cloze:Sentence}}</div>
 
-  <div class="typebox">{{type:cloze:Sentence}}</div>
+  <div class="webtype-result" id="webtype-result" style="display:none"></div>
+  <script>
+  (function () {
+    var out = document.getElementById('webtype-result');
+    if (!out) return;
+    var typed = null;
+    try { typed = sessionStorage.getItem('ecTyped'); sessionStorage.removeItem('ecTyped'); } catch (e) {}
+    if (typed === null) return;
+    var answer = Array.prototype.map.call(
+      document.querySelectorAll('.sentence .cloze'),
+      function (el) { return el.textContent; }
+    ).join(', ');
+    function norm(s) {
+      return s.replace(/[\\u2018\\u2019]/g, "'").replace(/\\s+/g, ' ').trim().toLowerCase();
+    }
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    var a = norm(answer), t = norm(typed);
+    if (t === a) {
+      out.innerHTML = '<span class="wt-ok">\\u2713 ' + esc(typed.trim()) + '</span>';
+    } else {
+      var marked = '';
+      for (var i = 0; i < t.length; i++) {
+        var c = esc(t.charAt(i));
+        marked += t.charAt(i) === a.charAt(i) ? c : '<span class="wt-bad">' + c + '</span>';
+      }
+      out.innerHTML = '<span class="wt-typed">' + (marked || '\\u2014') + '</span>' +
+        ' <span class="wt-arrow">\\u2192</span> <span class="wt-ok">' + esc(answer) + '</span>';
+    }
+    out.style.display = '';
+  })();
+  </script>
 
   {{#SentenceRU}}<details class="ru"><summary>Перевод предложения</summary><div class="ru-body">{{SentenceRU}}</div></details>{{/SentenceRU}}
 
@@ -117,6 +194,11 @@ CSS = """.card { text-align: left; }
   border-radius: 6px;
 }
 .ec .typebox code#typeans { font-size: 21px; }
+.ec .webtype-result { margin-top: 14px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 20px; }
+.ec .wt-ok { color: #2e7d32; }
+.ec .wt-typed { color: #1a1a1a; }
+.ec .wt-bad { color: #c62828; text-decoration: line-through; }
+.ec .wt-arrow { color: #9a9a9a; }
 
 .ec .headword { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
 .ec .target { font-size: 28px; font-weight: 600; }
@@ -163,6 +245,9 @@ b { font-weight: 600; }
 .nightMode .ec .typebox input, .night_mode .ec .typebox input { color: #e0e0e0; background: #2c2c2c; border-color: #4a4a4a; }
 .nightMode .ec .my-example, .night_mode .ec .my-example { color: #81c784; }
 .nightMode .ec .my-example-pending, .night_mode .ec .my-example-pending { border-color: #4a4a4a; }
+.nightMode .ec .wt-typed, .night_mode .ec .wt-typed { color: #e0e0e0; }
+.nightMode .ec .wt-ok, .night_mode .ec .wt-ok { color: #81c784; }
+.nightMode .ec .wt-bad, .night_mode .ec .wt-bad { color: #ef9a9a; }
 """
 
 
